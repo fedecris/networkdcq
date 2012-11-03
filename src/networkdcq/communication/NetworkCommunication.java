@@ -8,7 +8,7 @@ import networkdcq.NetworkApplicationDataProducer;
 public abstract class NetworkCommunication {
 
 	/** Interval between status updates to the other hosts */
-	public static final int BROADCAST_LOCAL_STATUS_INTERVAL_MS = 30;
+	public static int BROADCAST_LOCAL_STATUS_INTERVAL_MS = 30;
 	
 	/** Local data producer instance */
 	protected NetworkApplicationDataProducer producer = null;

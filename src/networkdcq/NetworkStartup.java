@@ -38,10 +38,6 @@ public class NetworkStartup {
 	public static boolean configureStartup(NetworkApplicationDataConsumer consumer, NetworkApplicationDataProducer producer) throws Exception {
 		
 		try {
-			
-			if (networkDiscovery!=null || networkCommunication!=null)
-				throw new Exception ("NetworkStartup already configured.");
-			
 	    	// Discovery handler
 	        networkDiscovery = HostDiscoveryFactory.getHostDiscovery(HostDiscoveryFactory.getDefaultDiscoveryMethod());
 	        // Communication listener
@@ -59,17 +55,32 @@ public class NetworkStartup {
 	
 	/**
 	 * Network main application entry point for starting host discovery and host communication logic.
-	 * Must execute the proper configuration first. 
+	 * This method will broadcast local host status every {@code HostDiscovery.DISCOVERY_INTERVAL_MS}, and  
+	 * will create the server thread in charge of receiving and establish remote connections from other hosts. 
+	 * Also, will send local host application-level information every {@code NetworkCommunication.BROADCAST_LOCAL_STATUS_INTERVAL_MS}
+	 * Must execute the proper configuration first!
+	 *   
+	 * @param startHostDicovery
+	 * 		Set to true if host discovery service is needed  
+	 * @param startNetworkService
+	 * 		Set to true if network communication service for receiving application-level information from other hosts is needed
+	 * @param startNetworkBroadcast
+	 * 		Set to true if network broadcast application-level information must be sent periodically to other hosts 
+	 * 
 	 * @return 
 	 * 		true if startup was OK, or false otherwise
 	 * @throws 
 	 * 		Exception in case of error or misconfiguration
 	 */
-	public static boolean doStartup() throws Exception {
+	public static boolean doStartup(boolean startHostDicovery, boolean startNetworkService, boolean startNetworkBroadcast) throws Exception {
 		
 		// Was the startup correctly configured?
-		if (networkCommunication==null || networkDiscovery==null)
+		if (networkCommunication==null || (networkDiscovery==null))
 			throw new Exception ("NetworkStartup not configured.  Invoke configureStartup() first.");
+		if (startNetworkService && networkCommunication.getConsumer() == null)
+			throw new Exception ("Cannot start network service without a consumer");
+		if (startNetworkBroadcast && networkCommunication.getProducer() == null)
+			throw new Exception ("Cannot start network broadcast without a producer");
 		
 		try {
 			if (HostDiscovery.NO_NETWORK_IP.equals(HostDiscovery.thisHost.getHostIP())) {
@@ -77,15 +88,15 @@ public class NetworkStartup {
 				return false;
 			}
 			// Communication server
-			if (!networkCommunication.startService())
+			if (startNetworkService && !networkCommunication.startService())
 				throw new Exception ("Error starting network communication service");
 	        
 	        // Discovery service
-	        if (!networkDiscovery.startDiscovery())
+	        if (startHostDicovery && !networkDiscovery.startDiscovery())
 	        	throw new Exception ("Error starting network discovery service");
 	        
 	        // Communication client
-	        if (!networkCommunication.startBroadcast())
+	        if (startNetworkBroadcast && !networkCommunication.startBroadcast())
 	        	throw new Exception ("Error starting network communication broadcast");
 	        	
 	        return true;

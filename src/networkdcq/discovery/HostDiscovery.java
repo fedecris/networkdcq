@@ -7,7 +7,7 @@ import networkdcq.util.Logger;
 public abstract class HostDiscovery {
 
 	/** Status update interval (ms) */
-	public static final int DISCOVERY_INTERVAL_MS = 1000;
+	public static int DISCOVERY_INTERVAL_MS = 1000;
 	/** Host local */
 	public static Host thisHost = null;
 	/** The other hosts list. IP->Host details */
