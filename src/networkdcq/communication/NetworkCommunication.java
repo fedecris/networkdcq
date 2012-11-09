@@ -93,7 +93,7 @@ public abstract class NetworkCommunication {
 	 * @param targetIP destination host IP
 	 * @param data message content
 	 */
-	public abstract void sendMessage(String targetIP, NetworkApplicationData data);
+	public abstract void sendMessage(Host targetHost, NetworkApplicationData data);
 	
 	/**
 	 * Sends a single data message to all known hosts
