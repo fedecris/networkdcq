@@ -81,11 +81,17 @@ public class TCPCommunication extends NetworkCommunication implements Runnable{
 	}
 	
 	@Override
-	public synchronized void sendMessage(String targetIP, NetworkApplicationData data) {
+	public synchronized void sendMessage(Host targetHost, NetworkApplicationData data) {
 
 		// dont send nulls
 		if (data==null)
 			return;
+		// retrieve host IP
+		String targetIP = targetHost.getHostIP();
+		if (targetIP==null) {
+			Logger.w("Cannot send!  targetHost IP is null");
+			return;
+		}
 		// get client from pool
 		if (clientPool.get(targetIP)==null) {
 			Logger.e("Client is null");
@@ -108,7 +114,7 @@ public class TCPCommunication extends NetworkCommunication implements Runnable{
 	public synchronized void sendMessageToAllHosts(NetworkApplicationData data) {
 		for (i=0; i<clientPool.getKeyList().size(); i++)
 			if (HostDiscovery.otherHosts.get(clientPool.getKeyList().get(i))!=null && HostDiscovery.otherHosts.get(clientPool.getKeyList().get(i)).isOnLine())
-				sendMessage(clientPool.getKeyList().get(i), data);
+				sendMessage(HostDiscovery.otherHosts.get(clientPool.getKeyList().get(i)), data);
 	}
 
 
