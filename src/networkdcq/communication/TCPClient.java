@@ -7,7 +7,7 @@ import java.net.Socket;
 
 import networkdcq.Host;
 import networkdcq.NetworkApplicationData;
-import networkdcq.NetworkStartup;
+import networkdcq.NetworkDCQ;
 import networkdcq.discovery.HostDiscovery;
 import networkdcq.util.Logger;
 
@@ -59,7 +59,7 @@ public class TCPClient extends TCPNetwork {
     	}
     	catch (Exception e) {
             // Tell the app that the connection with the host is lost
-        	NetworkStartup.getCommunication().getConsumer().byeHost(new Host(host, false));
+        	NetworkDCQ.getCommunication().getConsumer().byeHost(new Host(host, false));
         	HostDiscovery.removeHost(host);
         	throw e;
     	}
