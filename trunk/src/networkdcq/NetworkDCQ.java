@@ -11,7 +11,7 @@ import networkdcq.discovery.HostDiscovery;
 import networkdcq.discovery.HostDiscoveryFactory;
 import networkdcq.util.Logger;
 
-public class NetworkStartup {
+public class NetworkDCQ {
 
 	/**
 	 * NetworkCommunication implementation logic
@@ -76,7 +76,7 @@ public class NetworkStartup {
 		
 		// Was the startup correctly configured?
 		if (networkCommunication==null || (networkDiscovery==null))
-			throw new Exception ("NetworkStartup not configured.  Invoke configureStartup() first.");
+			throw new Exception ("NetworkDCQ not configured.  Invoke configureStartup() first.");
 		if (startNetworkService && networkCommunication.getConsumer() == null)
 			throw new Exception ("Cannot start network service without a consumer");
 		if (startNetworkBroadcast && networkCommunication.getProducer() == null)

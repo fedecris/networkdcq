@@ -7,7 +7,7 @@ import java.net.Socket;
 
 
 import networkdcq.Host;
-import networkdcq.NetworkStartup;
+import networkdcq.NetworkDCQ;
 import networkdcq.discovery.HostDiscovery;
 import networkdcq.util.Logger;
 
@@ -37,13 +37,13 @@ public class TCPServer extends TCPListener implements Runnable {
                     continue;
 
                 // Update data to be consumed
-                NetworkStartup.getCommunication().getConsumer().newData(networkApplicationData);
+                NetworkDCQ.getCommunication().getConsumer().newData(networkApplicationData);
                 networkApplicationData = null;
             }
             catch (IOException ex) {
                 // Tell the app that the connection with the host is lost, or has too many errors
             	String ip = socket.getInetAddress().toString().substring(1);
-            	NetworkStartup.getCommunication().getConsumer().byeHost(new Host(ip, false));
+            	NetworkDCQ.getCommunication().getConsumer().byeHost(new Host(ip, false));
             	HostDiscovery.removeHost(ip);
             	ok = false;
             }
