@@ -72,12 +72,12 @@ public class NetworkDCQ {
 	 * @throws 
 	 * 		Exception in case of error or misconfiguration
 	 */
-	public static boolean doStartup(boolean startHostDicovery, boolean startNetworkService, boolean startNetworkBroadcast) throws Exception {
+	public static boolean doStartup(boolean startHostDicovery, boolean startCommunicationService, boolean startNetworkBroadcast) throws Exception {
 		
 		// Was the startup correctly configured?
 		if (networkCommunication==null || (networkDiscovery==null))
 			throw new Exception ("NetworkDCQ not configured.  Invoke configureStartup() first.");
-		if (startNetworkService && networkCommunication.getConsumer() == null)
+		if (startCommunicationService && networkCommunication.getConsumer() == null)
 			throw new Exception ("Cannot start network service without a consumer");
 		if (startNetworkBroadcast && networkCommunication.getProducer() == null)
 			throw new Exception ("Cannot start network broadcast without a producer");
@@ -88,7 +88,7 @@ public class NetworkDCQ {
 				return false;
 			}
 			// Communication server
-			if (startNetworkService && !networkCommunication.startService())
+			if (startCommunicationService && !networkCommunication.startService())
 				throw new Exception ("Error starting network communication service");
 	        
 	        // Discovery service
