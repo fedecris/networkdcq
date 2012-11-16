@@ -63,7 +63,7 @@ class UDPListener extends UDPDiscovery implements Runnable {
 	    }
 	    else {
 	    	// Update host status
-	    	otherHosts.get(values[0]).setOnLine("Y".equals(values[1])?true:false);
+	    	otherHosts.get(values[0]).updateHostStatus("Y".equals(values[1])?true:false);
 	    }
 	}
 

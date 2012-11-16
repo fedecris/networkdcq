@@ -15,7 +15,8 @@ public class Host implements Serializable {
 	private String hostIP;
 	/** Current status (online or not) */
 	private boolean onLine;
-	
+	/** Last ping (for timeOut validation) */
+	private long lastPing = -1;
 	
 	public String toString() {
 	    return " (" + hostIP + ") - " + (onLine?"Online":"Offline");
@@ -42,6 +43,14 @@ public class Host implements Serializable {
         this.onLine = onLine;
     }
 
+	public long getLastPing() {
+		return lastPing;
+	}
+
+	public void setLastPing(long lastPing) {
+		this.lastPing = lastPing;
+	}
+    
     /** 
      * Especificación de equals
      */
@@ -83,5 +92,9 @@ public class Host implements Serializable {
         return null;
     }
     
-    
+
+    public void updateHostStatus(boolean onLine) {
+    	setOnLine(onLine);
+    	setLastPing(System.currentTimeMillis());
+    }
 }
