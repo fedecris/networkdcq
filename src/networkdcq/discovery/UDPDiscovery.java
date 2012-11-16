@@ -3,8 +3,13 @@ package networkdcq.discovery;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.ArrayList;
 
-class UDPDiscovery extends HostDiscovery {
+import networkdcq.Host;
+import networkdcq.NetworkDCQ;
+import networkdcq.util.Logger;
+
+class UDPDiscovery extends HostDiscovery implements Runnable {
 
 	/** UDP Port */
 	public static final int UDP_PORT = 9998;
@@ -41,6 +46,8 @@ class UDPDiscovery extends HostDiscovery {
         Thread threadB = new Thread(client);
         threadB.start();
         
+        // Host timeOut validator
+        new Thread(this).start();
         return true;
 	}
 	
@@ -49,6 +56,26 @@ class UDPDiscovery extends HostDiscovery {
 	 */
 	public void stopDiscovery() {
 		running = false;
+	}
+
+	/**
+	 * In charge of verifying hosts timeOuts
+	 */
+	public synchronized void run() {
+		while (running) {
+			for (Host host : otherHosts.getValueList()) {
+				if (System.currentTimeMillis() - host.getLastPing() > DISCOVERY_TIMEOUT_CHECK_INTERVAL_MS)
+					NetworkDCQ.getCommunication().getConsumer().byeHost(host);
+			}
+        	try {
+        		Thread.sleep(DISCOVERY_TIMEOUT_CHECK_INTERVAL_MS);
+        	}
+        	catch (Exception e) { 
+        		Logger.w(e.getMessage()); 
+        	}
+
+		}
+		
 	}
 	
 	
