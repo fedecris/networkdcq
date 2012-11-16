@@ -78,9 +78,9 @@ public class NetworkDCQ {
 		if (networkCommunication==null || (networkDiscovery==null))
 			throw new Exception ("NetworkDCQ not configured.  Invoke configureStartup() first.");
 		if (startCommunicationService && networkCommunication.getConsumer() == null)
-			throw new Exception ("Cannot start network service without a consumer");
+			throw new Exception ("Cannot start communication service without a consumer");
 		if (startNetworkBroadcast && networkCommunication.getProducer() == null)
-			throw new Exception ("Cannot start network broadcast without a producer");
+			throw new Exception ("Cannot start broadcast without a producer");
 		
 		try {
 			if (HostDiscovery.NO_NETWORK_IP.equals(HostDiscovery.thisHost.getHostIP())) {
