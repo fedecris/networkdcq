@@ -63,7 +63,7 @@ class UDPDiscovery extends HostDiscovery implements Runnable {
 	public synchronized void run() {
 		while (running) {
 			for (Host host : otherHosts.getValueList()) {
-				if (System.currentTimeMillis() - host.getLastPing() > DISCOVERY_TIMEOUT_CHECK_INTERVAL_MS) {
+				if (System.currentTimeMillis() - host.getLastPing() > DISCOVERY_TIMEOUT_LIMIT_MS) {
 					HostDiscovery.removeHost(host.getHostIP());
 					NetworkDCQ.getCommunication().getConsumer().byeHost(host);
 				}

@@ -10,6 +10,8 @@ public abstract class HostDiscovery {
 	public static int DISCOVERY_INTERVAL_MS = 1000;
 	/** TimeOut validation interval (ms) */
 	public static int DISCOVERY_TIMEOUT_CHECK_INTERVAL_MS = DISCOVERY_INTERVAL_MS * 3;
+	/** TimeOut acceptance limit (ms) */
+	public static int DISCOVERY_TIMEOUT_LIMIT_MS = DISCOVERY_TIMEOUT_CHECK_INTERVAL_MS;	
 	/** Host local */
 	public static Host thisHost = null;
 	/** The other hosts list. IP->Host details */
