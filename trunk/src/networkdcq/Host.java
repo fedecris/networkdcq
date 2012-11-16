@@ -16,7 +16,7 @@ public class Host implements Serializable {
 	/** Current status (online or not) */
 	private boolean onLine;
 	/** Last ping (for timeOut validation) */
-	private long lastPing = -1;
+	private long lastPing = System.currentTimeMillis();
 	
 	public String toString() {
 	    return " (" + hostIP + ") - " + (onLine?"Online":"Offline");

@@ -3,7 +3,6 @@ package networkdcq.discovery;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.ArrayList;
 
 import networkdcq.Host;
 import networkdcq.NetworkDCQ;
@@ -64,8 +63,10 @@ class UDPDiscovery extends HostDiscovery implements Runnable {
 	public synchronized void run() {
 		while (running) {
 			for (Host host : otherHosts.getValueList()) {
-				if (System.currentTimeMillis() - host.getLastPing() > DISCOVERY_TIMEOUT_CHECK_INTERVAL_MS)
+				if (System.currentTimeMillis() - host.getLastPing() > DISCOVERY_TIMEOUT_CHECK_INTERVAL_MS) {
+					HostDiscovery.removeHost(host.getHostIP());
 					NetworkDCQ.getCommunication().getConsumer().byeHost(host);
+				}
 			}
         	try {
         		Thread.sleep(DISCOVERY_TIMEOUT_CHECK_INTERVAL_MS);
