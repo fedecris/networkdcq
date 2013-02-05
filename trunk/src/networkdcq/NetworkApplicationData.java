@@ -18,4 +18,5 @@ public abstract class NetworkApplicationData implements Serializable {
 	}
 
 
+    
 }

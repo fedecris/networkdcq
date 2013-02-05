@@ -8,7 +8,9 @@ import java.net.Socket;
 
 
 import networkdcq.NetworkApplicationData;
+import networkdcq.NetworkDCQ;
 import networkdcq.util.Logger;
+import networkdcq.util.NetworkSerializable;
 
 
 public class TCPNetwork extends TCPCommunication {
@@ -38,7 +40,14 @@ public class TCPNetwork extends TCPCommunication {
      */
     public void write(NetworkApplicationData data) throws IOException {
         try {
-            toBuffer.writeObject(data);
+        	// Native serialization?
+        	if (NetworkDCQ.getCommunication().getSerializableData() == null)
+        		toBuffer.writeObject(data);
+           	else {
+           		// Multi-platform serialization?
+           		toBuffer.write((((NetworkSerializable)data).networkSerialize()).getBytes());
+           	}
+            
             toBuffer.flush();
             toBuffer.reset();
         }
@@ -56,7 +65,22 @@ public class TCPNetwork extends TCPCommunication {
      */
     public NetworkApplicationData receive() throws IOException {
         try {
-        	return (NetworkApplicationData)fromBuffer.readObject();
+        	// Native serialization?
+        	if (NetworkDCQ.getCommunication().getSerializableData() == null)
+        		return (NetworkApplicationData)fromBuffer.readObject();
+        	else {
+        	// Multi-platform serialization?
+    			int inputChar;
+    			StringBuffer sb = new StringBuffer();
+    		    // se lee hasta el caracter de fin
+    			while ((inputChar = fromBuffer.read()) != NetworkSerializable.VARIABLE_END_OF_VARIABLES)
+    		      sb.append((char)inputChar);
+
+    			// Delego a quien corresponda
+    			return (NetworkApplicationData)NetworkDCQ.getCommunication().getSerializableData().networkDeserialize(sb.toString());
+        	}
+        	
+        		
         }   
         catch (Exception ex) {
         	Logger.w("Exception reading object:" + ex.getMessage());

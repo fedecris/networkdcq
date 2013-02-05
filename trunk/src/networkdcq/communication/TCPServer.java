@@ -32,13 +32,13 @@ public class TCPServer extends TCPListener implements Runnable {
         while (listenerRunning && ok) {
             try {
                 // Wait for incoming messages
-            	networkApplicationData = receive();
-                if (networkApplicationData == null)
+            	data = receive();
+                if (data == null)
                     continue;
 
                 // Update data to be consumed
-                NetworkDCQ.getCommunication().getConsumer().newData(networkApplicationData);
-                networkApplicationData = null;
+                NetworkDCQ.getCommunication().getConsumer().newData(data);
+                data = null;
             }
             catch (IOException ex) {
                 // Tell the app that the connection with the host is lost, or has too many errors

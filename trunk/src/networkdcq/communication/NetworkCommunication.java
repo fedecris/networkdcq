@@ -4,6 +4,7 @@ import networkdcq.Host;
 import networkdcq.NetworkApplicationData;
 import networkdcq.NetworkApplicationDataConsumer;
 import networkdcq.NetworkApplicationDataProducer;
+import networkdcq.util.NetworkSerializable;
 
 public abstract class NetworkCommunication {
 
@@ -14,8 +15,11 @@ public abstract class NetworkCommunication {
 	protected NetworkApplicationDataProducer producer = null;
 	/** Remote data consumer instance */
 	protected NetworkApplicationDataConsumer consumer = null;
-    /** Message data to send/received */
-    protected NetworkApplicationData networkApplicationData = null;
+    /** Message data to send/receive (native platform) */
+    protected NetworkApplicationData data = null;
+    /** Message data to send/receive (multi platform) */
+    protected NetworkSerializable serializableData = null;
+
     
     /**
      * Default producer getter
@@ -49,6 +53,40 @@ public abstract class NetworkCommunication {
 		this.consumer = consumer;
 	}
     
+	/**
+	 * Default networkApplicationData getter
+	 * @return allocated data instance
+	 */
+	public NetworkApplicationData getData() {
+		return data;
+	}
+
+	/**
+	 * Default networkApplicationData setter
+	 * @param data the domain specific networkApplicationData subclass
+	 */
+	public void setData(NetworkApplicationData data) {
+		this.data = data;
+	}
+
+	/**
+	 * Default getSerializableData getter
+	 * @return allocated data instance
+	 */
+	public NetworkSerializable getSerializableData() {
+		return serializableData;
+	}
+
+	/**
+	 * Default getSerializableData setter
+	 * @param data the domain specific getSerializableData implementation
+	 */
+	public void setSerializableData(NetworkSerializable serializableData) {
+		this.serializableData = serializableData;
+	}
+
+
+	
 	/* 
 	 * ================================================================================================= 
 	 */
@@ -100,7 +138,6 @@ public abstract class NetworkCommunication {
 	 * @param data message content
 	 */
 	public abstract void sendMessageToAllHosts(NetworkApplicationData data);
-
 
 
 

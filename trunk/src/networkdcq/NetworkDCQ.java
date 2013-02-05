@@ -5,11 +5,14 @@ package networkdcq;
  * invoke the static methods configureStartup() and doStartup() in that order.
  */
 
+import java.io.Serializable;
+
 import networkdcq.communication.NetworkCommunication;
 import networkdcq.communication.NetworkCommunicationFactory;
 import networkdcq.discovery.HostDiscovery;
 import networkdcq.discovery.HostDiscoveryFactory;
 import networkdcq.util.Logger;
+import networkdcq.util.NetworkSerializable;
 
 public class NetworkDCQ {
 
@@ -29,13 +32,16 @@ public class NetworkDCQ {
 	 * @param consumer 
 	 * 		instance in charge of updating the local model based on the received messages from other hosts
 	 * @param producer
-	 * 		instance in charge of setting the local information to be broadcasted periodically to the other hosts
+	 * 		instance in charge of setting the local information to be broadcasted periodically to the other hosts (optional)
+	 * @param data
+	 * 		subclass of NetworkApplicationData that also implements NetworkSerializable (for multi-platform exchange) (optional)
+	 * 		if this parameter is null, then default {@link Serializable} is used 
 	 * @return
 	 * 		true of configuration was OK, or false otherwise
 	 * @throws 
 	 * 		Exception if an application is trying to configure an already configured startup
 	 */
-	public static boolean configureStartup(NetworkApplicationDataConsumer consumer, NetworkApplicationDataProducer producer) throws Exception {
+	public static boolean configureStartup(NetworkApplicationDataConsumer consumer, NetworkApplicationDataProducer producer, NetworkSerializable serializableData) throws Exception {
 		
 		try {
 	    	// Discovery handler
@@ -44,6 +50,7 @@ public class NetworkDCQ {
 	        networkCommunication = NetworkCommunicationFactory.getNetworkCommunication(NetworkCommunicationFactory.getDefaultNetworkCommunication());
 	        networkCommunication.setConsumer(consumer);
 	        networkCommunication.setProducer(producer);
+	        networkCommunication.setSerializableData(serializableData);
 	        return true;
 		} 
 		catch (Exception e) {
