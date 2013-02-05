@@ -7,7 +7,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
 
-public class Host implements Serializable {
+import networkdcq.util.NetworkSerializable;
+
+public class Host implements Serializable, NetworkSerializable {
 
 	/** Serial Version UID */
 	private static final long serialVersionUID = 2807206367538864478L;
@@ -97,4 +99,23 @@ public class Host implements Serializable {
     	setOnLine(onLine);
     	setLastPing(System.currentTimeMillis());
     }
+
+	@Override
+	public String networkSerialize() {
+		return ( hostIP + NetworkSerializable.VARIABLE_MEMBER_SEPARATOR +
+				 onLine + NetworkSerializable.VARIABLE_MEMBER_SEPARATOR +		
+		 		 lastPing + NetworkSerializable.VARIABLE_END_OF_VARIABLES);
+	}
+
+	@Override
+	public Object networkDeserialize(String data) {
+		String cadenas[] = data.split(""+NetworkSerializable.VARIABLE_MEMBER_SEPARATOR);	
+
+		// creo la instancia Host y la devuelvo
+		Host host = new Host(cadenas[0], cadenas[1]=="true");
+		host.setLastPing(Long.parseLong(cadenas[2]));
+		return host;
+	}
+
+
 }
