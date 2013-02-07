@@ -17,7 +17,7 @@ public abstract class NetworkCommunication {
 	protected NetworkApplicationDataConsumer consumer = null;
     /** Message data to send/receive (native platform) */
     protected NetworkApplicationData data = null;
-    /** Message data to send/receive (multi platform) */
+    /** Instance used simply to know if multi-platform exchange should be used instead of native */
     protected NetworkSerializable serializableData = null;
 
     

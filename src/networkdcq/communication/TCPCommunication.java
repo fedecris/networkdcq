@@ -73,11 +73,11 @@ public class TCPCommunication extends NetworkCommunication implements Runnable{
 			clientPool.put(target.getHostIP(), new TCPClient(target.getHostIP()));
 
 		TCPClient client = clientPool.get(target.getHostIP());
-		if (client!=null) {
+		if (client!=null && !client.connected) {
 			client.connect();
 			return client.connected;
 		}
-		return false; 
+		return client.connected; 
 	}
 	
 	@Override

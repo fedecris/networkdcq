@@ -35,7 +35,7 @@ public class NetworkDCQ {
 	 * 		instance in charge of setting the local information to be broadcasted periodically to the other hosts (optional)
 	 * @param data
 	 * 		subclass of NetworkApplicationData that also implements NetworkSerializable (for multi-platform exchange) (optional)
-	 * 		if this parameter is null, then default {@link Serializable} is used 
+	 * 		if this parameter is null, then default Android {@link Serializable} logic is used 
 	 * @return
 	 * 		true of configuration was OK, or false otherwise
 	 * @throws 
