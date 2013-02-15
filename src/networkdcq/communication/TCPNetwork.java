@@ -76,7 +76,6 @@ public class TCPNetwork extends TCPCommunication {
     			while ((inputChar = fromBuffer.read()) != NetworkSerializable.VARIABLE_END_OF_VARIABLES && inputChar != -1)
     		      sb.append((char)inputChar);
 
-    			Logger.i("Recibido: " + sb.toString());
     			// Return the reconstructed instance 
     			return (NetworkApplicationData)NetworkDCQ.getCommunication().getSerializableData().networkDeserialize(sb.toString());
         	}
