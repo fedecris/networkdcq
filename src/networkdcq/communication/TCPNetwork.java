@@ -69,18 +69,17 @@ public class TCPNetwork extends TCPCommunication {
         	if (NetworkDCQ.getCommunication().getSerializableData() == null)
         		return (NetworkApplicationData)fromBuffer.readObject();
         	else {
-        	// Multi-platform serialization?
+        		// Multi-platform serialization?
     			int inputChar;
     			StringBuffer sb = new StringBuffer();
-    		    // se lee hasta el caracter de fin
-    			while ((inputChar = fromBuffer.read()) != NetworkSerializable.VARIABLE_END_OF_VARIABLES)
+    		    // Read until end-of-variable-flag
+    			while ((inputChar = fromBuffer.read()) != NetworkSerializable.VARIABLE_END_OF_VARIABLES && inputChar != -1)
     		      sb.append((char)inputChar);
 
-    			// Delego a quien corresponda
+    			Logger.i("Recibido: " + sb.toString());
+    			// Return the reconstructed instance 
     			return (NetworkApplicationData)NetworkDCQ.getCommunication().getSerializableData().networkDeserialize(sb.toString());
         	}
-        	
-        		
         }   
         catch (Exception ex) {
         	Logger.w("Exception reading object:" + ex.getMessage());

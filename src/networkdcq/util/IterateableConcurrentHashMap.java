@@ -12,11 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class IterateableConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
 
-	/**	  */
+	/** Class version */
 	private static final long serialVersionUID = 1L;
-	/** */
+	/** A list containing the keys of the map */
 	protected ArrayList<K> keyList = new ArrayList<K>();
-	/** */
+	/** A list containing the values of the map */
 	protected ArrayList<V> valueList =  new ArrayList<V>();
 	
 	@Override
