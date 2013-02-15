@@ -111,7 +111,7 @@ public class Host implements Serializable, NetworkSerializable {
 	public Object networkDeserialize(String data) {
 		String cadenas[] = data.split(""+NetworkSerializable.VARIABLE_MEMBER_SEPARATOR);	
 
-		// creo la instancia Host y la devuelvo
+		// Create and return new Host instance
 		Host host = new Host(cadenas[0], cadenas[1]=="true");
 		host.setLastPing(Long.parseLong(cadenas[2]));
 		return host;
