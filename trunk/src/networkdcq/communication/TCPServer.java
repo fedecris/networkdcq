@@ -1,8 +1,10 @@
 package networkdcq.communication;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 
@@ -23,6 +25,17 @@ public class TCPServer extends TCPListener implements Runnable {
 		this.toBuffer = toBuffer;
 	}
 
+	
+	/**
+	 * Constructor
+	 */
+	public TCPServer(Socket socket, InputStream fromBufferSerializable, OutputStream toBufferSerializable) {
+		Logger.i("Creating connection to: " + socket.getInetAddress());
+		this.socket = socket;
+		this.fromBufferSerializable = fromBufferSerializable;
+		this.toBufferSerializable = toBufferSerializable;
+	}
+	
 	
 	/**
 	 * Receives and notifies incoming messages

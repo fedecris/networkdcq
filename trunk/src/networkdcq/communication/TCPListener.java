@@ -1,9 +1,12 @@
 package networkdcq.communication;
 
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 
+import networkdcq.NetworkDCQ;
 import networkdcq.util.Logger;
 
 
@@ -54,13 +57,22 @@ public class TCPListener extends TCPNetwork implements Runnable {
         try {   
         	Logger.i("Esperando client connections...");
             socket = serverConn.accept();
-            toBuffer = new ObjectOutputStream(socket.getOutputStream());
-            fromBuffer = new ObjectInputStream(socket.getInputStream());
-            new Thread(new TCPServer(socket, fromBuffer, toBuffer)).start();
+            OutputStream output = socket.getOutputStream();
+            InputStream input = socket.getInputStream();
+            if (NetworkDCQ.getCommunication().getSerializableData() == null) {
+            	toBuffer = new ObjectOutputStream(output);
+            	fromBuffer = new ObjectInputStream(input);
+            	new Thread(new TCPServer(socket, fromBuffer, toBuffer)).start();
+            }
+            else {
+            	fromBufferSerializable = input;
+            	toBufferSerializable = output;
+            	new Thread(new TCPServer(socket, fromBufferSerializable, toBufferSerializable)).start();
+            }
             return true;
         }
         catch (Exception ex) { 
-        	Logger.e(ex.getMessage());
+        	Logger.e(ex.toString());
             return false;
         }
     }  
