@@ -1,7 +1,9 @@
 package networkdcq.communication;
 
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 
 
@@ -33,8 +35,16 @@ public class TCPClient extends TCPNetwork {
     	Logger.i("Connecting to:" + host);
         try {
             socket = new Socket(host, port);
-            toBuffer = new ObjectOutputStream(socket.getOutputStream());
-            fromBuffer = new ObjectInputStream(socket.getInputStream()); 
+            OutputStream output = socket.getOutputStream();
+            InputStream input = socket.getInputStream();
+            if (NetworkDCQ.getCommunication().getSerializableData() == null) {
+            	toBuffer = new ObjectOutputStream(output);
+            	fromBuffer = new ObjectInputStream(input);
+            }
+            else {
+            	toBufferSerializable = output;
+            	fromBufferSerializable = input;
+            }
             connected = true;
         }
         catch (Exception ex) { 

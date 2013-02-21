@@ -1,8 +1,10 @@
 package networkdcq.communication;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -32,6 +34,11 @@ public class TCPNetwork extends TCPCommunication {
     protected ObjectOutputStream toBuffer = null;
     /** Buffer for reading objects */
     protected ObjectInputStream fromBuffer = null;
+    
+    /** For writing NetworkSerializable data */
+    protected OutputStream toBufferSerializable = null;
+    /** For reading NetworkSerializable data */
+    protected InputStream fromBufferSerializable = null;
 
 	/**
      * Writes an object to the stream
@@ -41,15 +48,16 @@ public class TCPNetwork extends TCPCommunication {
     public void write(NetworkApplicationData data) throws IOException {
         try {
         	// Native serialization?
-        	if (NetworkDCQ.getCommunication().getSerializableData() == null)
+        	if (NetworkDCQ.getCommunication().getSerializableData() == null) {
         		toBuffer.writeObject(data);
+        		toBuffer.flush();
+           		toBuffer.reset();
+        	}
            	else {
            		// Multi-platform serialization?
-           		toBuffer.write((((NetworkSerializable)data).networkSerialize()).getBytes());
+           		toBufferSerializable.write((((NetworkSerializable)data).networkSerialize()).getBytes());
+           		toBufferSerializable.flush();
            	}
-            
-            toBuffer.flush();
-            toBuffer.reset();
         }
         catch (Exception ex) { 
         	Logger.w("Exception writing object:" + ex.getMessage());
@@ -73,9 +81,8 @@ public class TCPNetwork extends TCPCommunication {
     			int inputChar;
     			StringBuffer sb = new StringBuffer();
     		    // Read until end-of-variable-flag
-    			while ((inputChar = fromBuffer.read()) != NetworkSerializable.VARIABLE_END_OF_VARIABLES && inputChar != -1)
+    			while ((inputChar = fromBufferSerializable.read()) != NetworkSerializable.VARIABLE_END_OF_VARIABLES && inputChar != -1)
     		      sb.append((char)inputChar);
-
     			// Return the reconstructed instance 
     			return (NetworkApplicationData)NetworkDCQ.getCommunication().getSerializableData().networkDeserialize(sb.toString());
         	}
