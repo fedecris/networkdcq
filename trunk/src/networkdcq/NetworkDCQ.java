@@ -11,6 +11,8 @@ import networkdcq.communication.NetworkCommunication;
 import networkdcq.communication.NetworkCommunicationFactory;
 import networkdcq.discovery.HostDiscovery;
 import networkdcq.discovery.HostDiscoveryFactory;
+import networkdcq.qos.QoSMonitor;
+import networkdcq.qos.QoSMonitorFactory;
 import networkdcq.util.Logger;
 import networkdcq.util.NetworkSerializable;
 
@@ -25,6 +27,11 @@ public class NetworkDCQ {
 	 * NetworkDicovery implementation logic
 	 */
 	protected static HostDiscovery networkDiscovery = null;
+	
+	/**
+	 * QoSMonitor implementation logic
+	 */
+	protected static QoSMonitor qoSMonitor = null;
 	
 	
 	/**
@@ -51,6 +58,8 @@ public class NetworkDCQ {
 	        networkCommunication.setConsumer(consumer);
 	        networkCommunication.setProducer(producer);
 	        networkCommunication.setSerializableData(serializableData);
+	        // QoS monitor
+	        qoSMonitor = QoSMonitorFactory.getQosMonitor(QoSMonitorFactory.getDefaultQoSMonitor());
 	        return true;
 		} 
 		catch (Exception e) {
@@ -133,7 +142,14 @@ public class NetworkDCQ {
 		return NetworkCommunicationFactory.getNetworkCommunication(NetworkCommunicationFactory.getDefaultNetworkCommunication());
 	}
 
-	
+	/**
+	 * Shortcut for:
+	 * <code>QoSMonitorFactory.getQosMonitor(QoSMonitorFactory.getDefaultQoSMonitor())</code>
+	 * @return the default QoS Monitor instance
+	 */
+	public static QoSMonitor getQoS() {
+		return QoSMonitorFactory.getQosMonitor(QoSMonitorFactory.getDefaultQoSMonitor());
+	}	
 	
 }
 
