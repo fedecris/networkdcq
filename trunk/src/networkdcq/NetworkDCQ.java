@@ -78,7 +78,7 @@ public class NetworkDCQ {
 	 *   
 	 * @param startHostDicovery
 	 * 		Set to true if host discovery service is needed  
-	 * @param startNetworkService
+	 * @param startCommunicationService
 	 * 		Set to true if network communication service for receiving application-level information from other hosts is needed
 	 * @param startNetworkBroadcast
 	 * 		Set to true if network broadcast application-level information must be sent periodically to other hosts 

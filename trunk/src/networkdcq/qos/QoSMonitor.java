@@ -109,10 +109,10 @@ public abstract class QoSMonitor {
 		double retValue = -1;
 		int messageSizeBits = MemoryUtils.sizeOf(message) * 8;
 		int networkSpeedMbps = getNetworkSpeed(context);
-		float signalStrengthFactor = considerSS ? (getNetworkSignalStrength(context) + 1) / WIFI_STRENGTH_LEVELS : 1;
+		float signalStrengthFactor = considerSS ? (float)((getNetworkSignalStrength(context) + 1)) / (float)WIFI_STRENGTH_LEVELS : 1;
 		
 		// Calulate ideal o estimate real
-		retValue = (networkSpeedMbps / messageSizeBits) * ((signalStrengthFactor + .1) / 2);
+		retValue = (networkSpeedMbps * 1024 * 1024 / messageSizeBits) * ((signalStrengthFactor + .1) / 2);
 		return (int)(retValue / targetHostQty);
 	}
 	
