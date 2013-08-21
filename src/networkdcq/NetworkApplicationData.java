@@ -17,6 +17,8 @@ public abstract class NetworkApplicationData implements Serializable {
 		return sourceHost;
 	}
 
-
+    public Host setSourceHost(Host sourceHost) {
+		return this.sourceHost = sourceHost;
+	}
     
 }

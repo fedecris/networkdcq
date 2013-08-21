@@ -75,6 +75,7 @@ public class TCPCommunication extends NetworkCommunication implements Runnable{
 		TCPClient client = clientPool.get(target.getHostIP());
 		if (client!=null && !client.connected) {
 			client.connect();
+			HostDiscovery.otherHosts.put(target.getHostIP(), target);
 			return client.connected;
 		}
 		return client.connected; 
