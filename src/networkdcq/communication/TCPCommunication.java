@@ -127,7 +127,7 @@ public class TCPCommunication extends NetworkCommunication implements Runnable{
     		if (clientPool.size() > 0)
     			sendMessageToAllHosts(producer.produceNetworkApplicationData());
         	try {
-        		Thread.sleep(BROADCAST_LOCAL_STATUS_INTERVAL_MS);
+        		Thread.sleep(BROADCAST_LOCAL_STATUS_INTERVAL_MS, BROADCAST_LOCAL_STATUS_INTERVAL_NS);
         	}
         	catch (Exception e) { 
         		Logger.w(e.getMessage()); 
