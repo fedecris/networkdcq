@@ -20,12 +20,24 @@ import android.content.Context;
 
 public abstract class QoSMonitor {
 
+	/** Lots of bits, bytes or whatever */
+	public static final int MEBI = 1024 * 1024;
 	/** Strength levels count for a wireless network */
 	public static final int WIFI_STRENGTH_LEVELS = 10;
+
+//  === todavia no usados ===
+//	/** Total amount of messages sent to other hosts */
+//	public static int sentMessagesCount = 0;
+//	/** Total amount of messages received from other hosts */
+//	public static int receivedMessagesCount = 0;
+//	/** Time since the message is sent and the */
+//	public static int lastMessageDelayMS = 0;
+//	/** Time since the message is sent and the */
+//	public static int agvMessageDelayMS = 0;	
 	
 	/**
 	 * Calculates the total amount of <code>message</code> messages per second  
-	 * that can be sent to the other hosts, considering bandwidth but ignoring signal strength
+	 * that can be sent to the other hosts, considering bandwidth
 	 * 
 	 * @param 
 	 * 		message the base object message to use for calculation
@@ -36,23 +48,7 @@ public abstract class QoSMonitor {
 	 * 		a value equal or greater than 0, or -1 in case of an error
 	 */
 	public int calculateIdealMPS(NetworkApplicationData message, int targetHostQty, Context context) {
-		return getMPS(message, targetHostQty, false, false, context);
-	}
-
-	/**
-	 * Estimates the total amount of <code>message</code> messages per second  
-	 * that can be sent to the other hosts, considering bandwidth and signal strength (for WiFi networks)
-	 * 
-	 * @param 
-	 * 		message the base object message to use for calculation
-	 * @param 
-	 * 		targetHostQty the amount of target hosts to send the message.  The total amount of hosts
-	 * 		in the network can be obtained through <code>HostDiscovery.otherHosts.size()</code>
-	 * @return 
-	 * 		a value equal or greater than 0, or -1 in case of an error
-	 */
-	public int estimateRealMPS(NetworkApplicationData message, int targetHostQty, Context context) {
-		return getMPS(message, targetHostQty, true, false, context);
+		return getMPS(message, targetHostQty, false, context);
 	}
 
 	/**
@@ -68,7 +64,7 @@ public abstract class QoSMonitor {
 	 * 		a value equal or greater than 0, or -1 in case of an error
 	 */
 	public int retrieveLoggedMPS(NetworkApplicationData object, int targetHostQty, Context context) {
-		return getMPS(object, targetHostQty, false, true, context);
+		return getMPS(object, targetHostQty, true, context);
 	}
 
 	/**
@@ -79,21 +75,12 @@ public abstract class QoSMonitor {
 	 * @param 
 	 * 		targetHostQty the a mount of target hosts to send the same message object
 	 * @param 
-	 * 		considerSS takes into account the signal strength for the estimation.  
-	 * 		If <code>useLoggedMPS</code> is true, this value has to be false.
-	 * @param 
 	 * 		useLoggedMPS bases its return value on the historical MPS, no estimation is made.
-	 * 		If <code>considerSS</code> is true, this value has to be false.
 	 * 
 	 * @return  
 	 * 		a value equal or greater than 0, or -1 in case of an error
 	 */
-	protected int getMPS(NetworkApplicationData message, int targetHostQty, boolean considerSS, boolean useLoggedMPS, Context context) {
-		// Whether calculate/estimate or base the return value on historical data, but not both
-		if (considerSS && useLoggedMPS) {
-			Logger.e("Invalid arguments: considerSS = useLoggedMPS = true");
-			throw new RuntimeException("Invalid arguments: considerSS = useLoggedMPS = true");
-		}
+	protected int getMPS(NetworkApplicationData message, int targetHostQty, boolean useLoggedMPS, Context context) {
 		// Validate targetHostQty 
 		if (targetHostQty < 1) {
 			Logger.e("Invalid argument: targetHostQty < 1");
@@ -109,10 +96,10 @@ public abstract class QoSMonitor {
 		double retValue = -1;
 		int messageSizeBits = MemoryUtils.sizeOf(message) * 8;
 		int networkSpeedMbps = getNetworkSpeed(context);
-		float signalStrengthFactor = considerSS ? (float)((getNetworkSignalStrength(context) + 1)) / (float)WIFI_STRENGTH_LEVELS : 1;
+		// float signalStrengthFactor =  (float)((getNetworkSignalStrength(context) + 1)) / (float)WIFI_STRENGTH_LEVELS : 1;
 		
 		// Calulate ideal o estimate real
-		retValue = (networkSpeedMbps * 1024 * 1024 / messageSizeBits) * ((signalStrengthFactor + .1) / 2);
+		retValue = (networkSpeedMbps * MEBI / messageSizeBits);
 		return (int)(retValue / targetHostQty);
 	}
 	

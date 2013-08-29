@@ -8,8 +8,10 @@ import networkdcq.util.NetworkSerializable;
 
 public abstract class NetworkCommunication {
 
-	/** Interval between status updates to the other hosts */
+	/** Interval between status updates to the other hosts (miliseconds) */
 	public static int BROADCAST_LOCAL_STATUS_INTERVAL_MS = 30;
+	/** Interval between status updates to the other hosts (nanoseconds) */
+	public static int BROADCAST_LOCAL_STATUS_INTERVAL_NS = 0;
 	
 	/** Local data producer instance */
 	protected NetworkApplicationDataProducer producer = null;
