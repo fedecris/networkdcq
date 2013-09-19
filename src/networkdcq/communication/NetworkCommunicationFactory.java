@@ -21,13 +21,15 @@ public class NetworkCommunicationFactory {
 	 * @return an instance of the network communication method selected, or null otherwise
 	 */
 	public static NetworkCommunication getNetworkCommunication(int method) {
-		switch (method) {
-		case COMMUNICATION_METHOD_TCP:
-			if (instance==null)
-				instance = new TCPCommunication();
+		if (instance != null)
 			return instance;
-		default:
-			return null;
+		switch (method) {
+			case COMMUNICATION_METHOD_TCP:
+				instance = new TCPCommunication();
+				break;
+			default:
+				return null;
 		}
+		return instance;
 	}
 }

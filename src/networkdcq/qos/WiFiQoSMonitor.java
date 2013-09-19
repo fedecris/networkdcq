@@ -7,7 +7,7 @@ import android.net.wifi.WifiManager;
 
 public class WiFiQoSMonitor extends QoSMonitor {
 	
-	
+
 	/**
 	 * Returns the WiFi network speed in Mbps
 	 * @param context
@@ -15,7 +15,7 @@ public class WiFiQoSMonitor extends QoSMonitor {
 	 * @return
 	 * 		the Mbps value, or -1 in case of an error
 	 */
-	public int getNetworkSpeed(Context context) {
+	public int getNetworkSpeed() {
 		// Retrieve wifi manager and return value if possible 
         final WifiManager wifi = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
         if (wifi == null || !wifi.isWifiEnabled() || wifi.getConnectionInfo() == null) {
@@ -32,7 +32,7 @@ public class WiFiQoSMonitor extends QoSMonitor {
 	 * @return
 	 * 		the strength value, raging from 0 to <code>WIFI_STRENGTH_LEVELS-1</code>, or -1 in case of an error
 	 */
-	public int getNetworkSignalStrength(Context context) {
+	public int getNetworkSignalStrength() {
 		// Retrieve wifi manager 
         final WifiManager wifi = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
         if(wifi == null || !wifi.isWifiEnabled()) {

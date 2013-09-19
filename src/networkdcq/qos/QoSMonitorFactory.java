@@ -24,14 +24,16 @@ public class QoSMonitorFactory {
 	 * 		an instance of the selected QosMonitor implementation, or null otherwise
 	 */
 	public static QoSMonitor getQosMonitor(int type) {
-		switch (type) {
-		case QOS_MONITOR_WIFI:
-			if (instance==null)
-				instance = new WiFiQoSMonitor(); 
+		if (instance != null)
 			return instance;
-		default:
-			return null;
+		switch (type) {
+			case QOS_MONITOR_WIFI:
+				instance = new WiFiQoSMonitor(); 
+				break;
+			default:
+				return null;
 		}
+		return instance;
 	}
 
 

@@ -1,11 +1,11 @@
 package networkdcq.qos;
 
 /**
- * This class calculates how many messages can be sent to other hosts (or a specific host), 
+ * This class calculates/estimates how many messages can be sent to other hosts (or a specific host), 
  * considering (or not) the wireless signal strength, the network bandwith and the message object size  
  * 
- * This class must consider or base its information on:
- * """"""""""""""""""""""""""""""""""""""""""""""""""""
+ * This class considers or base its information on:
+ * """"""""""""""""""""""""""""""""""""""""""""""""
  *  - The network bandwidth
  * 	- The NetworkApplicationData object size to be sent
  *  - The amount of hosts in the network
@@ -13,7 +13,12 @@ package networkdcq.qos;
  *  - Historical MPS
  */
 
+import java.util.ArrayList;
+
+import networkdcq.Host;
 import networkdcq.NetworkApplicationData;
+import networkdcq.NetworkDCQ;
+import networkdcq.discovery.HostDiscovery;
 import networkdcq.util.Logger;
 import networkdcq.util.MemoryUtils;
 import android.content.Context;
@@ -24,20 +29,21 @@ public abstract class QoSMonitor {
 	public static final int MEBI = 1024 * 1024;
 	/** Strength levels count for a wireless network */
 	public static final int WIFI_STRENGTH_LEVELS = 10;
-
-//  === todavia no usados ===
-//	/** Total amount of messages sent to other hosts */
-//	public static int sentMessagesCount = 0;
-//	/** Total amount of messages received from other hosts */
-//	public static int receivedMessagesCount = 0;
-//	/** Time since the message is sent and the */
-//	public static int lastMessageDelayMS = 0;
-//	/** Time since the message is sent and the */
-//	public static int agvMessageDelayMS = 0;	
+	/** Current network scan */
+	public static QoSScanResult currentScan = null; 
 	
+	/** Application context */
+	protected Context context = null;
+	
+	/** Collection of scan results */
+	protected ArrayList<QoSScanResult> scanResults = new ArrayList<QoSScanResult>();
+	/** Collection of sent messages counters */
+	protected ArrayList<QoSLogCounter> logCounters = new ArrayList<QoSLogCounter>();
+
+
 	/**
 	 * Calculates the total amount of <code>message</code> messages per second  
-	 * that can be sent to the other hosts, considering bandwidth
+	 * that can be sent to the other hosts, considering bandwidth only
 	 * 
 	 * @param 
 	 * 		message the base object message to use for calculation
@@ -47,10 +53,88 @@ public abstract class QoSMonitor {
 	 * @return 
 	 * 		a value equal or greater than 0, or -1 in case of an error
 	 */
-	public int calculateIdealMPS(NetworkApplicationData message, int targetHostQty, Context context) {
-		return getMPS(message, targetHostQty, false, context);
+	public int calculateIdealMPS(NetworkApplicationData message) {
+		return getMPS(message, getNetworkSpeed());
 	}
+	
+	
+	/**
+	 * Estimates the total amount of <code>message</code> messages per second
+	 * that can be sent to other hosts, based on a simple test
+	 * 
+	 * @param 
+	 * 		message the base object message to use for calculation
+	 * @param 
+	 * 		targetHost the target host for estimation, null if all hosts must be considered
+	 * @return 
+	 * 		a value equal or greater than 0, or -1 in case of an error
+	 */
+	public int estimateRealMPS(NetworkApplicationData message, Host targetHost) {
+		try {
+			// no other hosts? nothing to do
+			if (HostDiscovery.otherHosts.size() == 0)
+				return -1;
 
+			// only one current scan at a time
+			if (currentScan != null)
+				return -1;
+			currentScan = new QoSScanResult();
+			
+			// Colleccion of hosts to scan
+			ArrayList<Host> targetHosts = new ArrayList<Host>();   
+			if (targetHost != null)
+				targetHosts.add(targetHost);
+			else
+				targetHosts = HostDiscovery.otherHosts.getValueList();
+
+			// Iterate the hosts collection
+			long intervalMS = 0;
+			QoSMonitorTestMessage testMessage = new QoSMonitorTestMessage();
+			for (Host aHost : targetHosts) {
+				testMessage = new QoSMonitorTestMessage();
+				long start = System.currentTimeMillis();
+				NetworkDCQ.getCommunication().sendMessage(aHost, testMessage);
+				// Wait for answer
+				synchronized(currentScan){
+				    while (currentScan.scanning){
+				    	// FIXME: If a host leaves with no answer, this get locked forever!!
+				    	currentScan.wait();
+				    }
+				}
+				long finish = System.currentTimeMillis();
+				intervalMS += finish - start;
+			}
+
+			// Average intervals and calculate speed depending on testMessage
+			intervalMS = intervalMS / targetHosts.size();
+			long testMessageSizeBits = MemoryUtils.sizeOf(testMessage) * 8;
+			long speedBitsPerMS = testMessageSizeBits / intervalMS; 
+			long speedBPS = speedBitsPerMS * 1000;
+			long speedMbps = speedBPS / MEBI;
+			// Save the scan result, and calculate MPS based on speed and message object size
+			currentScan.networkSignalStrength = getNetworkSignalStrength();
+			currentScan.networkSpeedMbps = getNetworkSpeed();
+			currentScan.estimatedMPS = getMPS(message, (int)speedMbps);
+			currentScan.targetHosts = targetHosts;
+			scanResults.add(currentScan);
+			currentScan = null;
+			return getMPS(message, (int)speedMbps);
+		}
+		catch (InterruptedException e) {
+			Logger.e(e.toString());
+			return -1;
+		}
+		catch (Exception e) {
+			Logger.e(e.toString());
+			return -1;
+		}
+		finally {
+			currentScan = null;
+		}
+		
+	}
+	
+	
 	/**
 	 * Retrieves the total amount of <code>message</code> messages per second
 	 * that where sent to other hosts, based on the corresponding logged information
@@ -58,71 +142,65 @@ public abstract class QoSMonitor {
 	 * @param 
 	 * 		message the base object message to use for calculation
 	 * @param 
-	 * 		targetHostQty the amount of target hosts to send the message.  The total amount of hosts
-	 * 		in the network can be obtained through <code>HostDiscovery.otherHosts.size()</code>
+	 * 		targetHost the target host for estimation, null if all hosts must be considered
 	 * @return 
 	 * 		a value equal or greater than 0, or -1 in case of an error
 	 */
-	public int retrieveLoggedMPS(NetworkApplicationData object, int targetHostQty, Context context) {
-		return getMPS(object, targetHostQty, true, context);
+	public int retrieveLoggedMPS(NetworkApplicationData object, Host targetHost) {
+		// TODO: Implementation pending
+		return 1;
 	}
-
+	
+	
 	/**
-	 * Calculates/estimates/retrieves the total amount of <code>object</code> messages per second that can be sent
-	 * 
-	 * @param 
-	 * 		message the base object to use for calculation
-	 * @param 
-	 * 		targetHostQty the a mount of target hosts to send the same message object
-	 * @param 
-	 * 		useLoggedMPS bases its return value on the historical MPS, no estimation is made.
+	 * Returns the total amount of <code>object</code> messages per second that can be sent
 	 * 
 	 * @return  
 	 * 		a value equal or greater than 0, or -1 in case of an error
 	 */
-	protected int getMPS(NetworkApplicationData message, int targetHostQty, boolean useLoggedMPS, Context context) {
-		// Validate targetHostQty 
-		if (targetHostQty < 1) {
-			Logger.e("Invalid argument: targetHostQty < 1");
-			throw new RuntimeException("Invalid argument: targetHostQty < 1");			
-		}
-
-		// Retrieve logged. TODO: Implementation pending
-		if (useLoggedMPS) {
-			return 0;
-		}
-		
+	protected int getMPS(NetworkApplicationData message, int networkSpeedMbps) {
 		// Initial values
-		double retValue = -1;
 		int messageSizeBits = MemoryUtils.sizeOf(message) * 8;
-		int networkSpeedMbps = getNetworkSpeed(context);
-		// float signalStrengthFactor =  (float)((getNetworkSignalStrength(context) + 1)) / (float)WIFI_STRENGTH_LEVELS : 1;
-		
 		// Calulate ideal o estimate real
-		retValue = (networkSpeedMbps * MEBI / messageSizeBits);
-		return (int)(retValue / targetHostQty);
+		return (int)(networkSpeedMbps * MEBI / messageSizeBits);
 	}
 	
 	/**
 	 * This method must return the established network speed in Mbps
 	 * 
-	 * @param context
-	 * 		the Android context
 	 * @return
 	 * 		the corresponding value in Mbps, or -1 in case of an error
 	 */
-	public abstract int getNetworkSpeed(Context context);
+	public abstract int getNetworkSpeed();
 	
 	/**
 	 * In a wireless network, this method must return a normalized 
 	 * signal strength raging from 0 to {@code WIFI_STRENGTH_LEVELS}
 	 * In a wired network this method must return {@code WIFI_STRENGTH_LEVELS}
 	 * 
-	 * @param context
-	 * 		the Android context
 	 * @return
 	 * 		the corresponding value, or -1 in case of an error
 	 */
-	public abstract int getNetworkSignalStrength(Context context);
+	public abstract int getNetworkSignalStrength();
+
+	
+
+	public void setContext(Context context) {
+		this.context = context;
+	}
+
+	public Context getContext() {
+		return context;
+	}
+	
+	public ArrayList<QoSScanResult> getScanResults() {
+		return scanResults;
+	}
+
+	public ArrayList<QoSLogCounter> getLogCounters() {
+		return logCounters;
+	}
+
+
 
 }
