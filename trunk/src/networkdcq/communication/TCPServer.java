@@ -11,6 +11,8 @@ import java.net.Socket;
 import networkdcq.Host;
 import networkdcq.NetworkDCQ;
 import networkdcq.discovery.HostDiscovery;
+import networkdcq.qos.QoSMonitor;
+import networkdcq.qos.QoSMonitorTestMessage;
 import networkdcq.util.Logger;
 
 public class TCPServer extends TCPListener implements Runnable {
@@ -49,6 +51,21 @@ public class TCPServer extends TCPListener implements Runnable {
                 if (data == null)
                     continue;
 
+                // Is this a QoS-related message?
+                if (data instanceof QoSMonitorTestMessage) {
+                	// Return object or calculate elapsed loop time
+                	if (((QoSMonitorTestMessage)data).state == QoSMonitorTestMessage.STATE_FROM_SOURCE) {
+                		((QoSMonitorTestMessage)data).state = QoSMonitorTestMessage.STATE_TO_SOURCE;
+                		sendMessage(data.getSourceHost(), data);
+                	}
+                	else {
+                		// Notify QoS
+                		QoSMonitor.currentScan.scanning = false;
+                		QoSMonitor.currentScan.notifyAll();
+                	}
+                	return;
+                }
+                
                 // Update data to be consumed
                 NetworkDCQ.getCommunication().getConsumer().newData(data);
                 data = null;

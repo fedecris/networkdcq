@@ -7,6 +7,8 @@ package networkdcq;
 
 import java.io.Serializable;
 
+import android.content.Context;
+
 import networkdcq.communication.NetworkCommunication;
 import networkdcq.communication.NetworkCommunicationFactory;
 import networkdcq.discovery.HostDiscovery;
@@ -42,24 +44,27 @@ public class NetworkDCQ {
 	 * 		instance in charge of setting the local information to be broadcasted periodically to the other hosts (optional)
 	 * @param data
 	 * 		subclass of NetworkApplicationData that also implements NetworkSerializable (for multi-platform exchange) (optional)
-	 * 		if this parameter is null, then default Android {@link Serializable} logic is used 
+	 * 		if this parameter is null, then default Android {@link Serializable} logic is used
+	 * @param context
+	 * 		Android context.  Required for QoS features only.  A null value can be passed if not needed.
 	 * @return
 	 * 		true of configuration was OK, or false otherwise
 	 * @throws 
 	 * 		Exception if an application is trying to configure an already configured startup
 	 */
-	public static boolean configureStartup(NetworkApplicationDataConsumer consumer, NetworkApplicationDataProducer producer, NetworkSerializable serializableData) throws Exception {
+	public static boolean configureStartup(NetworkApplicationDataConsumer consumer, NetworkApplicationDataProducer producer, NetworkSerializable serializableData, Context context) throws Exception {
 		
 		try {
 	    	// Discovery handler
-	        networkDiscovery = HostDiscoveryFactory.getHostDiscovery(HostDiscoveryFactory.getDefaultDiscoveryMethod());
+	        networkDiscovery = getDiscovery();
 	        // Communication listener
-	        networkCommunication = NetworkCommunicationFactory.getNetworkCommunication(NetworkCommunicationFactory.getDefaultNetworkCommunication());
+	        networkCommunication = getCommunication();
 	        networkCommunication.setConsumer(consumer);
 	        networkCommunication.setProducer(producer);
 	        networkCommunication.setSerializableData(serializableData);
 	        // QoS monitor
-	        qoSMonitor = QoSMonitorFactory.getQosMonitor(QoSMonitorFactory.getDefaultQoSMonitor());
+	        qoSMonitor = getQoS();
+	        qoSMonitor.setContext(context);
 	        return true;
 		} 
 		catch (Exception e) {

@@ -21,14 +21,16 @@ public class HostDiscoveryFactory {
 	 * @return an instance of the discovery method selected, or null otherwise
 	 */
 	public static HostDiscovery getHostDiscovery(int method) {
-		switch (method) {
-		case DISCOVERY_METHOD_UDP:
-			if (instance==null)
-				instance = new UDPDiscovery(); 
+		if (instance != null)
 			return instance;
-		default:
-			return null;
+		switch (method) {
+			case DISCOVERY_METHOD_UDP:
+				instance = new UDPDiscovery(); 
+				break;
+			default:
+				return null;
 		}
+		return instance;
 	}
 
 }

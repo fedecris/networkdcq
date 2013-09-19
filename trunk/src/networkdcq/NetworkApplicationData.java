@@ -21,4 +21,10 @@ public abstract class NetworkApplicationData implements Serializable {
 		return this.sourceHost = sourceHost;
 	}
     
+    /**
+     * Subclasses related with internal messages (such a QoS test message classes) must override this method.
+     */
+    public boolean isQoSMessage() {
+    	return false;
+    }
 }
