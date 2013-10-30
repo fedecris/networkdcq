@@ -60,10 +60,11 @@ public class TCPServer extends TCPListener implements Runnable {
                 	}
                 	else {
                 		// Notify QoS
-                		QoSMonitor.currentScan.scanning = false;
-                		QoSMonitor.currentScan.notifyAll();
+                		synchronized (QoSMonitor.LOCK) {
+	                		QoSMonitor.LOCK.notify();
+                		}
                 	}
-                	return;
+                	continue;
                 }
                 
                 // Update data to be consumed

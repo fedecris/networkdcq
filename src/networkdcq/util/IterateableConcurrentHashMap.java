@@ -22,10 +22,11 @@ public class IterateableConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> 
 	@Override
 	public synchronized V put(K key, V value) {
 		super.put(key, value);
+		keyList.remove(key);
+		valueList.remove(value);
 		keyList.add(key);
 		valueList.add(value);
 		return value;
-		
 	}
 	
 	@Override

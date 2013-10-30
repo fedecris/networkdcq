@@ -31,12 +31,13 @@ public abstract class QoSMonitor {
 	public static final int WIFI_STRENGTH_LEVELS = 10;
 	/** Current network scan */
 	public static QoSScanResult currentScan = null; 
+	public static final Object LOCK = new Object();
 	
 	/** Application context */
 	protected Context context = null;
 	
 	/** Collection of scan results */
-	protected ArrayList<QoSScanResult> scanResults = new ArrayList<QoSScanResult>();
+	public ArrayList<QoSScanResult> scanResults = new ArrayList<QoSScanResult>();
 	/** Collection of sent messages counters */
 	protected ArrayList<QoSLogCounter> logCounters = new ArrayList<QoSLogCounter>();
 
@@ -92,14 +93,13 @@ public abstract class QoSMonitor {
 			QoSMonitorTestMessage testMessage = new QoSMonitorTestMessage();
 			for (Host aHost : targetHosts) {
 				testMessage = new QoSMonitorTestMessage();
+				testMessage.setSourceHost(HostDiscovery.thisHost);
 				long start = System.currentTimeMillis();
 				NetworkDCQ.getCommunication().sendMessage(aHost, testMessage);
 				// Wait for answer
-				synchronized(currentScan){
-				    while (currentScan.scanning){
+				synchronized(LOCK){
 				    	// FIXME: If a host leaves with no answer, this get locked forever!!
-				    	currentScan.wait();
-				    }
+				    	LOCK.wait();
 				}
 				long finish = System.currentTimeMillis();
 				intervalMS += finish - start;
@@ -109,16 +109,16 @@ public abstract class QoSMonitor {
 			intervalMS = intervalMS / targetHosts.size();
 			long testMessageSizeBits = MemoryUtils.sizeOf(testMessage) * 8;
 			long speedBitsPerMS = testMessageSizeBits / intervalMS; 
-			long speedBPS = speedBitsPerMS * 1000;
-			long speedMbps = speedBPS / MEBI;
+			float speedBPS = speedBitsPerMS * 1000;
+			float speedMbps = (float)speedBPS / (float)MEBI;
 			// Save the scan result, and calculate MPS based on speed and message object size
 			currentScan.networkSignalStrength = getNetworkSignalStrength();
 			currentScan.networkSpeedMbps = getNetworkSpeed();
-			currentScan.estimatedMPS = getMPS(message, (int)speedMbps);
+			currentScan.estimatedMPS = getMPS(message, speedMbps);
 			currentScan.targetHosts = targetHosts;
 			scanResults.add(currentScan);
 			currentScan = null;
-			return getMPS(message, (int)speedMbps);
+			return getMPS(message, speedMbps);
 		}
 		catch (InterruptedException e) {
 			Logger.e(e.toString());
@@ -158,11 +158,11 @@ public abstract class QoSMonitor {
 	 * @return  
 	 * 		a value equal or greater than 0, or -1 in case of an error
 	 */
-	protected int getMPS(NetworkApplicationData message, int networkSpeedMbps) {
+	protected int getMPS(NetworkApplicationData message, float networkSpeedMbps) {
 		// Initial values
 		int messageSizeBits = MemoryUtils.sizeOf(message) * 8;
 		// Calulate ideal o estimate real
-		return (int)(networkSpeedMbps * MEBI / messageSizeBits);
+		return (int)(networkSpeedMbps * (float)MEBI / (float)messageSizeBits);
 	}
 	
 	/**
