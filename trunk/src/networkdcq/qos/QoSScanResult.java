@@ -6,8 +6,6 @@ import networkdcq.Host;
 
 public class QoSScanResult {
 
-	/** Currently scanning */
-	public boolean scanning = false;
 	/** Scan timestamp */
 	public long startTime = System.currentTimeMillis();
 	/** Network SignalStrength during this scan */
