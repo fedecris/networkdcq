@@ -76,6 +76,11 @@ public abstract class QoSMonitor {
 			if (HostDiscovery.otherHosts.size() == 0)
 				return -1;
 
+			// can we use a previous scan or the network/hosts/etc changed too much?
+			int previousScan = reusePreviousScan(getNetworkSpeed(), HostDiscovery.otherHosts.size(), 30);
+			if (previousScan >= 0)
+				return scanResults.get(previousScan).estimatedMPS;
+	
 			// only one current scan at a time
 			if (currentScan != null)
 				return -1;
@@ -163,6 +168,37 @@ public abstract class QoSMonitor {
 		// Calulate ideal o estimate real
 		return (int)(networkSpeedMbps * (float)MEBI / (float)messageSizeBits);
 	}
+	
+	
+	/**
+	 * Returns the position in <code>scanResults</code> which can be 
+	 * reused without having to spawn a new scan, or -1 otherwise  
+	 */
+	protected int reusePreviousScan(int currentNetworkSpeedMbps, int hostCount, int searchTimeLimitMinutes) {
+		int retValue = -1;
+		double bestDelta = 999999;
+		// Search for a possible match
+		double networkSpeedThreshold = currentNetworkSpeedMbps * .1;
+		for (int i = scanResults.size()-1; i >= 0; i--) {
+			// ommit host count changes
+			if (hostCount != scanResults.get(i).targetHosts.size())
+				continue;
+			double networkSpeedMbpsDelta = Math.abs(currentNetworkSpeedMbps - scanResults.get(i).networkSpeedMbps);
+			// ommit considerable large network speed deltas 
+			if (networkSpeedMbpsDelta > networkSpeedThreshold )
+				continue;
+			// ommit too old results
+			if (System.currentTimeMillis() - scanResults.get(i).startTime > searchTimeLimitMinutes * 60000)
+				break;
+			// keep best match (min delta)
+			if (networkSpeedMbpsDelta < bestDelta) {
+				bestDelta = networkSpeedMbpsDelta; 
+				retValue = 1;
+			}
+		}
+		return retValue;
+	}
+	
 	
 	/**
 	 * This method must return the established network speed in Mbps
