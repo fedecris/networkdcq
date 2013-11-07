@@ -96,10 +96,9 @@ public abstract class QoSMonitor {
 				testMessage.setSourceHost(HostDiscovery.thisHost);
 				long start = System.currentTimeMillis();
 				NetworkDCQ.getCommunication().sendMessage(aHost, testMessage);
-				// Wait for answer
+				// Wait for answer with a timeout in order to avoid blocking this thread
 				synchronized(LOCK){
-				    	// FIXME: If a host leaves with no answer, this get locked forever!!
-				    	LOCK.wait();
+				    LOCK.wait(1000);
 				}
 				long finish = System.currentTimeMillis();
 				intervalMS += finish - start;
@@ -201,6 +200,7 @@ public abstract class QoSMonitor {
 		return logCounters;
 	}
 
+	
 
 
 }
