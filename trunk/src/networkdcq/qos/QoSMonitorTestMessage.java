@@ -4,6 +4,7 @@ import networkdcq.NetworkApplicationData;
 
 public class QoSMonitorTestMessage  extends NetworkApplicationData {
 	
+	private static final long serialVersionUID = 1146902756667313198L;
 	public static final int STATE_FROM_SOURCE = 0;
 	public static final int STATE_TO_SOURCE = 1;
 	
