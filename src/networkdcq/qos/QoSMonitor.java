@@ -67,19 +67,23 @@ public abstract class QoSMonitor {
 	 * 		message the base object message to use for calculation
 	 * @param 
 	 * 		targetHost the target host for estimation, null if all hosts must be considered
+	 * @param 
+	 * 		reusePreviousScan search for previous scans with similar scenario (speed/hosts) in order to avoid pawning a new scan
 	 * @return 
 	 * 		a value equal or greater than 0, or -1 in case of an error
 	 */
-	public int estimateRealMPS(NetworkApplicationData message, Host targetHost) {
+	public int estimateRealMPS(NetworkApplicationData message, Host targetHost, boolean reusePreviousScan) {
 		try {
 			// no other hosts? nothing to do
 			if (HostDiscovery.otherHosts.size() == 0)
 				return -1;
 
 			// can we use a previous scan or the network/hosts/etc changed too much?
-			int previousScan = reusePreviousScan(getNetworkSpeed(), HostDiscovery.otherHosts.size(), 30);
-			if (previousScan >= 0)
-				return scanResults.get(previousScan).estimatedMPS;
+			if (reusePreviousScan) {
+				int previousScan = reusePreviousScan(getNetworkSpeed(), HostDiscovery.otherHosts.size(), 30);
+				if (previousScan >= 0)
+					return scanResults.get(previousScan).estimatedMPS;
+			}
 	
 			// only one current scan at a time
 			if (currentScan != null)
@@ -193,7 +197,7 @@ public abstract class QoSMonitor {
 			// keep best match (min delta)
 			if (networkSpeedMbpsDelta < bestDelta) {
 				bestDelta = networkSpeedMbpsDelta; 
-				retValue = 1;
+				retValue = i;
 			}
 		}
 		return retValue;
