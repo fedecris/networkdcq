@@ -1,0 +1,1 @@
+Network support features for Discovery Communication & QoS
